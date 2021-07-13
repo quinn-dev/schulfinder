@@ -1,0 +1,52 @@
+{
+	"name": "schulfinder",
+	"version": "0.0.0",
+	"description": "Gather data about Baden-Württemberg's schools (Germany)",
+	"license": "MIT",
+	"repository": "quinn-dev/schulfinder",
+	"type": "module",
+	"bin": "dist/cli.js",
+	"engines": {
+		"node": ">=14"
+	},
+	"scripts": {
+		"dev": "node --loader ts-node/esm ./src/cli.ts",
+		"lint": "xo",
+		"release": "np",
+		"build": "del-cli dist && tsc",
+		"prepare": "yarn run build"
+	},
+	"files": [
+		"dist"
+	],
+	"keywords": [
+		"schule",
+		"school",
+		"baden-wuerttemberg",
+		"fragdenstaat",
+		"froide"
+	],
+	"dependencies": {
+		"chalk": "^4.1.1",
+		"got": "^11.8.2",
+		"libphonenumber-js": "^1.9.21",
+		"meow": "^10.0.1",
+		"ora": "^5.4.1",
+		"p-map": "^5.0.0",
+		"papaparse": "^5.3.1",
+		"superstruct": "^0.15.2",
+		"validator": "^13.6.0"
+	},
+	"devDependencies": {
+		"@types/papaparse": "^5.2.6",
+		"@types/validator": "^13.6.3",
+		"del-cli": "^4.0.0",
+		"np": "^7.5.0",
+		"ts-node": "^10.1.0",
+		"typescript": "^4.3.5",
+		"xo": "0.39.1"
+	},
+	"xo": {
+		"semicolon": false
+	}
+}
