@@ -11,9 +11,11 @@ import {
 	nullable
 } from 'superstruct'
 import ora from 'ora'
+import enquirer from 'enquirer'
 import pMap from 'p-map'
 import {District, SimpleSchool, DetailedSchool} from './types.js'
-import { quitWithError } from './cli.js'
+import { quit, quitWithError } from './cli.js'
+import { format } from 'libphonenumber-js'
 
 const baseURL = 'https://schulfinder.kultus-bw.de/api/'
 
@@ -98,15 +100,11 @@ export const getSchools = async (parameters: string | Record<string, string | nu
 		})
 }
 
-export const getSchoolsByURL = async (url: string, quiet = false) => {
-	const spinner = ora('Loading school list')
+export const getSchoolsByURL = async (url: string, froide = false, quiet = false) => {
+	const spinner = ora()
 
 	if (!(new URL(url).hostname == 'schulfinder.kultus-bw.de')) {
 		quitWithError(`Invalid URL: ${url}`)
-	}
-
-	if (!quiet) {
-		spinner.start()
 	}
 
 	url = url.trim()
@@ -117,6 +115,28 @@ export const getSchoolsByURL = async (url: string, quiet = false) => {
 		throw new Error(`Invalid URL: ${url}`)
 	} else {
 		const queryString = Buffer.from(base64String, 'base64').toString('utf-8')
+
+		if (froide) {
+			if (new URLSearchParams(queryString).get('outposts') == '1') {
+				spinner.warn('You have included outposts in your query. Importing outposts into Froide is highly discouraged.')
+
+				const answer = await enquirer.prompt({
+					type: 'confirm',
+					name: 'continue',
+					message: 'Do you want to continue?',
+					format: value => !!value ? 'yes' : 'no'
+				}) as {continue: boolean}
+
+				if (!answer.continue) {
+					spinner.fail('Aborted')
+					quit(1)
+				}
+			}
+		}
+
+		if (!quiet) {
+			spinner.start('Loading school list')
+		}
 
 		const schools = await getSchools(queryString)
 

@@ -28,6 +28,7 @@
 	],
 	"dependencies": {
 		"chalk": "^4.1.1",
+		"enquirer": "^2.3.6",
 		"got": "^11.8.2",
 		"libphonenumber-js": "^1.9.21",
 		"meow": "^10.0.1",

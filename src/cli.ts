@@ -12,6 +12,8 @@ import {
 } from './api.js'
 import {formatToFroide} from './formats.js'
 
+export const quit = (statusCode: number) => process.exit(statusCode)
+
 const {unparse} = papaparse
 
 const cli = meow(`
@@ -76,7 +78,7 @@ export const quitWithError = (message: string) => {
 	let schoolsWithoutDetails
 
 	if (options.url) {
-		schoolsWithoutDetails = await getSchoolsByURL(options.url, options.quiet)
+		schoolsWithoutDetails = await getSchoolsByURL(options.url, options.froide, options.quiet)
 	} else {
 		const districts = await getDistricts(options.quiet)
 		schoolsWithoutDetails = await getSchoolsByDistricts(districts, options.quiet)

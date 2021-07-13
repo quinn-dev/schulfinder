@@ -51,6 +51,8 @@ You can then use the `-u` option to pass in the URL:
 $ schulfinder schools.json -u https://schulfinder.kultus-bw.de/?q=P3Rlcm09aHR0cHM6Ly9iaXQubHkvM3I0OUJySSZkaXN0YW5jZT0mb3duZXI9Jm91dHBvc3RzPTEm
 ```
 
+**Note:** Make sure to exclude outposts by switching off `Außenstellen berücksichtigen` (within `Erweitert` settings) when using the `-u` option in combination with `-f`, since outposts often lack important data fields (like email, phone number and fax). 
+
 ### FragDenStaat
 
 `schulfinder` supports the data format used by [Froide](https://github.com/okfde/froide) to import public bodies (see the [format documentation](https://froide.readthedocs.io/en/latest/importpublicbodies/#format)). Froide is the Freedom of Information Portal used by the German project [FragDenStaat](https://fragdenstaat.de/) and its [Austrian counterpart](https://fragdenstaat.at/).
