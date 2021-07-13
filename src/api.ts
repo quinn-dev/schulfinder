@@ -13,6 +13,7 @@ import {
 import ora from 'ora'
 import pMap from 'p-map'
 import {District, SimpleSchool, DetailedSchool} from './types.js'
+import { quitWithError } from './cli.js'
 
 const baseURL = 'https://schulfinder.kultus-bw.de/api/'
 
@@ -99,6 +100,10 @@ export const getSchools = async (parameters: string | Record<string, string | nu
 
 export const getSchoolsByURL = async (url: string, quiet = false) => {
 	const spinner = ora('Loading school list')
+
+	if (!(new URL(url).hostname == 'schulfinder.kultus-bw.de')) {
+		quitWithError(`Invalid URL: ${url}`)
+	}
 
 	if (!quiet) {
 		spinner.start()

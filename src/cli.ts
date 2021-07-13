@@ -49,7 +49,7 @@ const cli = meow(`
 	}
 })
 
-const quitWithError = (message: string) => {
+export const quitWithError = (message: string) => {
 	console.log(chalk.bold(`  ${chalk.white.bgRedBright('Error')} - ${message}`))
 	cli.showHelp(1)
 }
