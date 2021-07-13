@@ -80,7 +80,7 @@ Schools with problems can be split into a seperate file by pasing in the `-p` op
 $ schulfinder schools.csv -f -p problems.csv
 ```
 
-If problems are split into a seperate file or no problems are found, the `problems` field will be emited from the main output file.
+If schools with problems are split into a seperate file or no problems are found, the `problems` field will be emited from the main output file.
 
 ## About the data source
 
