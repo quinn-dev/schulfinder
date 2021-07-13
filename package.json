@@ -1,6 +1,6 @@
 {
 	"name": "schulfinder",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Gather data about Baden-Württemberg's schools (Germany)",
 	"license": "MIT",
 	"repository": "quinn-dev/schulfinder",
