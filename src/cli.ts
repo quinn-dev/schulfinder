@@ -104,18 +104,22 @@ export const quitWithError = (message: string) => {
 			const schoolsWithoutProblems = []
 
 			for (const school of formattedSchools) {
-				if (school.problems.length > 0) {
+				const {problems, ...rest} = school
+
+				if (problems) {
 					schoolsWithProblems.push(school)
 				} else {
-					schoolsWithoutProblems.push(school)
+					schoolsWithoutProblems.push(rest)
 				}
 			}
 
 			writeFileSync(outputFile, unparse(schoolsWithoutProblems))
 			writeFileSync(options.problems, unparse(schoolsWithProblems))
+		} else if (problemCount === 0) {
+			writeFileSync(outputFile, unparse(formattedSchools.map(({problems, ...rest}) => rest)))
+		} else {
+			writeFileSync(outputFile, unparse(formattedSchools))
 		}
-
-		writeFileSync(outputFile, unparse(formattedSchools))
 	} else {
 		writeFileSync(outputFile, JSON.stringify(schoolsWithDetails))
 	}

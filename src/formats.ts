@@ -63,24 +63,40 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 		   Otherwise return 'Schule'
 		*/
 		const getClassification = () => {
-			const acronyms = [
-				'PROG',    'G8',  'SGGG',
-				'SGGS',    'WGF', 'WGW',
-				'TGG',     'TGI', 'TGM',
-				'TGU',     'WGI', 'G9',
-				'BTG',     'EG',  'TGT',
-				'TGTM',    '6TG', '6WG',
-				'TGE',     'TGN', '6ESG',
-				'AG',      'GA3', 'GA7',
+			const acronyms = new Set([
+				'PROG',
+				'G8',
+				'SGGG',
+				'SGGS',
+				'WGF',
+				'WGW',
+				'TGG',
+				'TGI',
+				'TGM',
+				'TGU',
+				'WGI',
+				'G9',
+				'BTG',
+				'EG',
+				'TGT',
+				'TGTM',
+				'6TG',
+				'6WG',
+				'TGE',
+				'TGN',
+				'6ESG',
+				'AG',
+				'GA3',
+				'GA7',
 				'FHOEGYM'
-			]
+			])
 
-			const isGymnasium = ({acronym, description_long}: {acronym: string, description_long: string}) => {
-				if (acronyms.includes(acronym)) {
+			const isGymnasium = ({acronym, description_long}: {acronym: string; description_long: string}) => {
+				if (acronyms.has(acronym)) {
 					return true
 				}
 
-				if(/[gG]ymnasium/.test(description_long)) {
+				if (/[gG]ymnasium/.test(description_long)) {
 					return true
 				}
 

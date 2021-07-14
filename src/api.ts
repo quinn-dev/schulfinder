@@ -7,14 +7,13 @@ import {
 	string,
 	any,
 	assert,
-	optional,
 	nullable
 } from 'superstruct'
 import ora from 'ora'
 import enquirer from 'enquirer'
 import pMap from 'p-map'
 import {District, SimpleSchool, DetailedSchool} from './types.js'
-import { quit, quitWithError } from './cli.js'
+import {quit, quitWithError} from './cli.js'
 
 const baseURL = 'https://schulfinder.kultus-bw.de/api/'
 
@@ -90,19 +89,19 @@ export const getSchools = async (parameters: string | Record<string, string | nu
 		})
 	)
 
-	return api.get(endpoint, {
+	const response = await api.get(endpoint, {
 		searchParams: parameters
 	})
-		.then(response => {
-			assert(response, ExpectedResponse)
-			return response
-		})
+
+	assert(response, ExpectedResponse)
+
+	return response
 }
 
 export const getSchoolsByURL = async (url: string, froide = false, quiet = false) => {
 	const spinner = ora()
 
-	if (!(new URL(url).hostname == 'schulfinder.kultus-bw.de')) {
+	if (!(new URL(url).hostname === 'schulfinder.kultus-bw.de')) {
 		quitWithError(`Invalid URL: ${url}`)
 	}
 
@@ -115,21 +114,19 @@ export const getSchoolsByURL = async (url: string, froide = false, quiet = false
 	} else {
 		const queryString = Buffer.from(base64String, 'base64').toString('utf-8')
 
-		if (froide) {
-			if (new URLSearchParams(queryString).get('outposts') == '1') {
-				spinner.warn('You have included outposts in your query. Importing outposts into Froide is highly discouraged.')
+		if (froide && new URLSearchParams(queryString).get('outposts') === '1') {
+			spinner.warn('You have included outposts in your query. Importing outposts into Froide is highly discouraged.')
 
-				const answer = await enquirer.prompt({
-					type: 'confirm',
-					name: 'continue',
-					message: 'Do you want to continue?',
-					format: value => !!value ? 'yes' : 'no'
-				}) as {continue: boolean}
+			const answer: {continue: boolean} = await enquirer.prompt({
+				type: 'confirm',
+				name: 'continue',
+				message: 'Do you want to continue?',
+				format: value => value ? 'yes' : 'no'
+			})
 
-				if (!answer.continue) {
-					spinner.fail('Aborted')
-					quit(1)
-				}
+			if (!answer.continue) {
+				spinner.fail('Aborted')
+				quit(1)
 			}
 		}
 
@@ -162,7 +159,7 @@ export const getSchoolsByDistricts = async (districts: District[], quiet = false
 		schoolsWithoutDetails.push(...schoolsByDistrict)
 
 		spinner.text = `Loading school list: ${district} (${districtCounter}/${districts.length})`
-		
+
 		districtCounter += 1
 	})
 
@@ -195,22 +192,22 @@ export const getSchoolDetails = async (uuid: string): Promise<DetailedSchool> =>
 		lng: number(),
 		official: number(),
 		branches: array(
-				object({
-					branch_id: number(),
-					acronym: string(),
-					description_long: string()
-				})
+			object({
+				branch_id: number(),
+				acronym: string(),
+				description_long: string()
+			})
 		),
 		trades: array()
 	})
 
-	return api.get(endpoint, {
+	const response = await api.get(endpoint, {
 		searchParams: {uuid}
 	})
-		.then(response => {
-			assert(response, ExpectedResponse)
-			return response
-		})
+
+	assert(response, ExpectedResponse)
+
+	return response
 }
 
 export const getMultipleSchoolDetails = async (schools: SimpleSchool[], quiet = false) => {
