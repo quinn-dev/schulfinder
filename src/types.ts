@@ -34,6 +34,6 @@ export interface DetailedSchool {
 	lat: number;
 	lng: number;
 	official: number;
-	branches: Array<{branch_id: number; acronym: string; description_long: string} | undefined>;
+	branches: Array<{branch_id: number; acronym: string; description_long: string}>;
 	trades: unknown[];
 }

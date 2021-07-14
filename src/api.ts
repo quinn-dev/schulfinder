@@ -15,7 +15,6 @@ import enquirer from 'enquirer'
 import pMap from 'p-map'
 import {District, SimpleSchool, DetailedSchool} from './types.js'
 import { quit, quitWithError } from './cli.js'
-import { format } from 'libphonenumber-js'
 
 const baseURL = 'https://schulfinder.kultus-bw.de/api/'
 
@@ -196,13 +195,11 @@ export const getSchoolDetails = async (uuid: string): Promise<DetailedSchool> =>
 		lng: number(),
 		official: number(),
 		branches: array(
-			optional(
 				object({
 					branch_id: number(),
 					acronym: string(),
 					description_long: string()
 				})
-			)
 		),
 		trades: array()
 	})

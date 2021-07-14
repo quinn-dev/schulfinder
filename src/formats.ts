@@ -12,7 +12,8 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 		phone,
 		fax,
 		email,
-		website
+		website,
+		branches
 	}) => {
 		const problems: string[] = []
 
@@ -58,6 +59,56 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 			return `Telefon: ${parsePhoneNumber(phone, 'DE')?.formatInternational() ?? phone}`
 		}
 
+		/* If a school only has Gymnasien or is named Gymnasium, return 'Gymnasium'
+		   Otherwise return 'Schule'
+		*/
+		const getClassification = () => {
+			const acronyms = [
+				'PROG',    'G8',  'SGGG',
+				'SGGS',    'WGF', 'WGW',
+				'TGG',     'TGI', 'TGM',
+				'TGU',     'WGI', 'G9',
+				'BTG',     'EG',  'TGT',
+				'TGTM',    '6TG', '6WG',
+				'TGE',     'TGN', '6ESG',
+				'AG',      'GA3', 'GA7',
+				'FHOEGYM'
+			]
+
+			const isGymnasium = ({acronym, description_long}: {acronym: string, description_long: string}) => {
+				if (acronyms.includes(acronym)) {
+					return true
+				}
+
+				if(/[gG]ymnasium/.test(description_long)) {
+					return true
+				}
+
+				return false
+			}
+
+			if (/[gG]ymnasium/.test(name)) {
+				return 'Gymnasium'
+			}
+
+			let gymnasien = 0
+			let otherSchools = 0
+
+			for (const branch of branches) {
+				if (isGymnasium(branch)) {
+					gymnasien += 1
+				} else {
+					otherSchools += 1
+				}
+			}
+
+			if (gymnasien > 0 && otherSchools === 0) {
+				return 'Gymnasium'
+			}
+
+			return 'Schule'
+		}
+
 		return {
 			name: city ? `${name} (${city})` : `${name}`,
 			email,
@@ -65,7 +116,7 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 			contact: getPhoneNumber(),
 			address: `${street ?? ''} ${house_number ?? ''}\n${postcode ?? ''} ${city ?? ''}`,
 			url: website,
-			classification: 'Schule',
+			classification: getClassification(),
 			jurisdiction__slug: 'baden-wuerttemberg',
 			categories: 'Schule',
 			problems: problems.join(' / ')
