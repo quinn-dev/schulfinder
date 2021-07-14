@@ -2,7 +2,7 @@
 import meow from 'meow'
 import chalk from 'chalk'
 import {writeFileSync} from 'fs'
-import papaparse from 'papaparse'
+import stringify from 'csv-stringify/lib/sync.js'
 import ora from 'ora'
 import {
 	getDistricts,
@@ -12,9 +12,15 @@ import {
 } from './api.js'
 import {formatToFroide} from './formats.js'
 
-export const quit = (statusCode: number) => process.exit(statusCode)
+const writeJson = (file: string, input: any) => {
+	writeFileSync(file, JSON.stringify(input))
+}
 
-const {unparse} = papaparse
+const writeCsv = (file: string, input: any[]) => {
+	writeFileSync(file, stringify(input, {header: true}))
+}
+
+export const quit = (statusCode: number) => process.exit(statusCode)
 
 const cli = meow(`
 	Usage
@@ -113,15 +119,15 @@ export const quitWithError = (message: string) => {
 				}
 			}
 
-			writeFileSync(outputFile, unparse(schoolsWithoutProblems))
-			writeFileSync(options.problems, unparse(schoolsWithProblems))
+			writeCsv(outputFile, schoolsWithoutProblems)
+			writeCsv(options.problems, schoolsWithProblems)
 		} else if (problemCount === 0) {
-			writeFileSync(outputFile, unparse(formattedSchools.map(({problems, ...rest}) => rest)))
+			writeCsv(outputFile, formattedSchools.map(({problems, ...rest}) => rest))
 		} else {
-			writeFileSync(outputFile, unparse(formattedSchools))
+			writeCsv(outputFile, formattedSchools)
 		}
 	} else {
-		writeFileSync(outputFile, JSON.stringify(schoolsWithDetails))
+		writeJson(outputFile, schoolsWithDetails)
 	}
 
 	if (!options.quiet) {
