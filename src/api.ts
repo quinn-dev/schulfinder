@@ -71,7 +71,7 @@ export const getDistricts = async (quiet = false) => {
 	return districts
 }
 
-export const getSchools = async (parameters: string | Record<string, string | number | boolean | null | undefined>): Promise<SimpleSchool[]> => {
+export const getSchools = async (parameters: string | Record<string, string> | URLSearchParams): Promise<SimpleSchool[]> => {
 	const endpoint = 'schools'
 
 	const ExpectedResponse = array(
@@ -89,8 +89,15 @@ export const getSchools = async (parameters: string | Record<string, string | nu
 		})
 	)
 
+	const searchParameters = new URLSearchParams(parameters)
+
+	/* Search both public and private schools by default */
+	if (!searchParameters.get('owner')) {
+		searchParameters.append('owner', '1')
+	}
+
 	const response = await api.get(endpoint, {
-		searchParams: parameters
+		searchParams: searchParameters
 	})
 
 	assert(response, ExpectedResponse)
@@ -155,7 +162,7 @@ export const getSchoolsByDistricts = async (districts: District[], quiet = false
 	let districtCounter = 1
 
 	await pMap(districts, async ({district, value}) => {
-		const schoolsByDistrict = await getSchools({district: value})
+		const schoolsByDistrict = await getSchools({district: value.toString()})
 		schoolsWithoutDetails.push(...schoolsByDistrict)
 
 		spinner.text = `Loading school list: ${district} (${districtCounter}/${districts.length})`
