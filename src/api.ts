@@ -71,7 +71,7 @@ export const getDistricts = async (quiet = false) => {
 	return districts
 }
 
-export const getSchools = async (parameters: Record<string, number | boolean | null | undefined> | URLSearchParams): Promise<SimpleSchool[]> => {
+export const getSchools = async (parameters: Record<string, string | number | boolean | null | undefined>): Promise<SimpleSchool[]> => {
 	const endpoint = 'schools'
 
 	const ExpectedResponse = array(
@@ -139,7 +139,7 @@ export const getSchoolsByURL = async (url: string, froide = false, quiet = false
 			spinner.start('Loading school list')
 		}
 
-		const schools = await getSchools(parameters)
+		const schools = await getSchools(Object.fromEntries(parameters))
 
 		if (!quiet) {
 			spinner.succeed()
