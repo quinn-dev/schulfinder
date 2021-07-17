@@ -16,7 +16,15 @@ export interface SimpleSchool {
 	website: string | null;
 }
 
+export interface Branch {
+	branch_id: number;
+	acronym: string;
+	description_long: string;
+}
+
 export interface DetailedSchool {
+	uuid: string;
+	types: string[];
 	outpost_number: string;
 	name: string;
 	street: string | null;
@@ -34,6 +42,6 @@ export interface DetailedSchool {
 	lat: number;
 	lng: number;
 	official: number;
-	branches: Array<{branch_id: number; acronym: string; description_long: string}>;
+	branches: Branch[];
 	trades: unknown[];
 }

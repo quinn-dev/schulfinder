@@ -1,6 +1,103 @@
 import parsePhoneNumber from 'libphonenumber-js'
 import isEmail from 'validator/lib/isEmail.js'
-import {DetailedSchool} from './types.js'
+import {DetailedSchool, Branch} from './types.js'
+
+const classifications = new Map([
+	['B', 'Berufliche Schule'],
+	['GM', 'Gemeinschaftsschule'],
+	['G', 'Grundschule'],
+	['GY', 'Gymnasium'],
+	['R', 'Realschule'],
+	['S', 'Förderschule'],
+	['WR', 'Werkrealschule']
+])
+
+const vocationalSchools = [
+	{
+		name: 'Berufliches Gymnasium',
+		match: [
+			/berufliches\s+gymnasium/i
+		]
+	},
+	{
+		name: 'Berufsfachschule',
+		match: [
+			/berufsfachschule/i
+		]
+	},
+	{
+		name: 'Berufskolleg',
+		match: [
+			/berufskolleg/i
+		]
+	},
+	{
+		name: 'Berufsoberschule',
+		match: [
+			/berufsoberschule/i
+		]
+	},
+	{
+		name: 'Berufsschule',
+		match: [
+			/berufsschule/i
+		]
+	},
+	{
+		name: 'Berufsvorbereitender Bildungsgang',
+		match: [
+			/vorqualifizierungsjahr/i,
+			/berufseinstiegsjahr/i,
+			/ausbildungsvorbereitung/i
+		]
+	},
+	{
+		name: 'Fachschule',
+		match: [
+			/fachschule/i
+		]
+	}
+]
+
+const getClassification = (types: string[], branches: Branch[]) => {
+	const acronyms = branches.map(({acronym}) => acronym)
+
+	const abendschulen = new Set(['ABGY', 'ARS'])
+
+	if (acronyms.length > 0 && acronyms.filter(acronym => !abendschulen.has(acronym)).length === 0) {
+		return 'Abendschule'
+	}
+
+	if (types.length > 1) {
+		return 'Schule'
+	}
+
+	const classification = classifications.get(types[0])
+
+	if (!classification) {
+		return 'Schule'
+	}
+
+	const unique = (array: any[]) => array.filter((subtype, index, array) => array.indexOf(subtype) === index)
+
+	if (classification === 'Berufliche Schule') {
+		const subtypes = unique(branches.map(({description_long}) => {
+			for (const {name, match} of vocationalSchools) {
+				for (const regex of match) {
+					if (regex.test(description_long)) {
+						return name
+					}
+				}
+			}
+
+			return 'Berufliche Schule'
+		}))
+
+		return subtypes.length === 1 ? subtypes[0] : 'Berufliche Schule'
+	}
+
+	return classification
+}
 
 export const formatToFroide = (schools: DetailedSchool[]) => {
 	return schools.map(({
@@ -13,6 +110,7 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 		fax,
 		email,
 		website,
+		types,
 		branches
 	}) => {
 		const problems: string[] = []
@@ -59,72 +157,6 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 			return `Telefon: ${parsePhoneNumber(phone, 'DE')?.formatInternational() ?? phone}`
 		}
 
-		/* If a school only has Gymnasien or is named Gymnasium, return 'Gymnasium'
-		   Otherwise return 'Schule'
-		*/
-		const getClassification = () => {
-			const acronyms = new Set([
-				'PROG',
-				'G8',
-				'SGGG',
-				'SGGS',
-				'WGF',
-				'WGW',
-				'TGG',
-				'TGI',
-				'TGM',
-				'TGU',
-				'WGI',
-				'G9',
-				'BTG',
-				'EG',
-				'TGT',
-				'TGTM',
-				'6TG',
-				'6WG',
-				'TGE',
-				'TGN',
-				'6ESG',
-				'AG',
-				'GA3',
-				'GA7',
-				'FHOEGYM'
-			])
-
-			const isGymnasium = ({acronym, description_long}: {acronym: string; description_long: string}) => {
-				if (acronyms.has(acronym)) {
-					return true
-				}
-
-				if (/[gG]ymnasium/.test(description_long)) {
-					return true
-				}
-
-				return false
-			}
-
-			if (/[gG]ymnasium/.test(name)) {
-				return 'Gymnasium'
-			}
-
-			let gymnasien = 0
-			let otherSchools = 0
-
-			for (const branch of branches) {
-				if (isGymnasium(branch)) {
-					gymnasien += 1
-				} else {
-					otherSchools += 1
-				}
-			}
-
-			if (gymnasien > 0 && otherSchools === 0) {
-				return 'Gymnasium'
-			}
-
-			return 'Schule'
-		}
-
 		return {
 			name: city ? `${name} (${city})` : `${name}`,
 			email,
@@ -132,7 +164,7 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 			contact: getPhoneNumber(),
 			address: `${street ?? ''} ${house_number ?? ''}\n${postcode ?? ''} ${city ?? ''}`,
 			url: website,
-			classification: getClassification(),
+			classification: getClassification(types, branches),
 			jurisdiction__slug: 'baden-wuerttemberg',
 			categories: 'Schule',
 			problems: problems.join(' / ')

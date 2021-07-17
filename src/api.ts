@@ -71,7 +71,7 @@ export const getDistricts = async (quiet = false) => {
 	return districts
 }
 
-export const getSchools = async (parameters: string | Record<string, string> | URLSearchParams): Promise<SimpleSchool[]> => {
+export const getSchools = async (parameters: Record<string, number | boolean | null | undefined> | URLSearchParams): Promise<SimpleSchool[]> => {
 	const endpoint = 'schools'
 
 	const ExpectedResponse = array(
@@ -89,15 +89,11 @@ export const getSchools = async (parameters: string | Record<string, string> | U
 		})
 	)
 
-	const searchParameters = new URLSearchParams(parameters)
-
-	/* Search both public and private schools by default */
-	if (!searchParameters.get('owner')) {
-		searchParameters.append('owner', '1')
-	}
-
 	const response = await api.get(endpoint, {
-		searchParams: searchParameters
+		searchParams: {
+			owner: 1, // Search for both public and private schools by default
+			...parameters
+		}
 	})
 
 	assert(response, ExpectedResponse)
@@ -121,7 +117,9 @@ export const getSchoolsByURL = async (url: string, froide = false, quiet = false
 	} else {
 		const queryString = Buffer.from(base64String, 'base64').toString('utf-8')
 
-		if (froide && new URLSearchParams(queryString).get('outposts') === '1') {
+		const parameters = new URLSearchParams(queryString)
+
+		if (froide && parameters.get('outposts') === '1') {
 			spinner.warn('You have included outposts in your query. Importing outposts into Froide is highly discouraged.')
 
 			const answer: {continue: boolean} = await enquirer.prompt({
@@ -141,7 +139,7 @@ export const getSchoolsByURL = async (url: string, froide = false, quiet = false
 			spinner.start('Loading school list')
 		}
 
-		const schools = await getSchools(queryString)
+		const schools = await getSchools(parameters)
 
 		if (!quiet) {
 			spinner.succeed()
@@ -162,7 +160,7 @@ export const getSchoolsByDistricts = async (districts: District[], quiet = false
 	let districtCounter = 1
 
 	await pMap(districts, async ({district, value}) => {
-		const schoolsByDistrict = await getSchools({district: value.toString()})
+		const schoolsByDistrict = await getSchools({district: value})
 		schoolsWithoutDetails.push(...schoolsByDistrict)
 
 		spinner.text = `Loading school list: ${district} (${districtCounter}/${districts.length})`
@@ -177,7 +175,7 @@ export const getSchoolsByDistricts = async (districts: District[], quiet = false
 	return schoolsWithoutDetails
 }
 
-export const getSchoolDetails = async (uuid: string): Promise<DetailedSchool> => {
+export const getSchoolDetails = async ({uuid, marker_label}: SimpleSchool): Promise<DetailedSchool> => {
 	const endpoint = 'school'
 
 	const ExpectedResponse = object({
@@ -214,7 +212,13 @@ export const getSchoolDetails = async (uuid: string): Promise<DetailedSchool> =>
 
 	assert(response, ExpectedResponse)
 
-	return response
+	const types = marker_label.split(',')
+
+	return {
+		uuid,
+		types,
+		...response
+	}
 }
 
 export const getMultipleSchoolDetails = async (schools: SimpleSchool[], quiet = false) => {
@@ -226,9 +230,9 @@ export const getMultipleSchoolDetails = async (schools: SimpleSchool[], quiet = 
 
 	const schoolsWithDetails: DetailedSchool[] = []
 
-	await pMap(schools, async ({uuid}: SimpleSchool) => {
-		const school = await getSchoolDetails(uuid)
-		schoolsWithDetails.push(school)
+	await pMap(schools, async (school: SimpleSchool) => {
+		const detailedSchool = await getSchoolDetails(school)
+		schoolsWithDetails.push(detailedSchool)
 
 		spinner.text = `Fetching school data (${schoolsWithDetails.length}/${schools.length})`
 	}, {concurrency: 300})
