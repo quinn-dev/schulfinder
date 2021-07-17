@@ -116,8 +116,8 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 	}) => {
 		const problems: string[] = []
 
-		const phone = unsanitizedPhone ? stripAnsi(unsanitizedPhone) : unsanitizedPhone
-		const fax = unsanitizedFax ? stripAnsi(unsanitizedFax) : unsanitizedFax
+		const phone = unsanitizedPhone ? stripAnsi(unsanitizedPhone).replace(/\u0096/g, '') : unsanitizedPhone
+		const fax = unsanitizedFax ? stripAnsi(unsanitizedFax).replace(/\u0096/g, '') : unsanitizedFax
 
 		if (street === null) {
 			problems.push('Missing street name')
