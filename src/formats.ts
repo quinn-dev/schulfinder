@@ -1,5 +1,6 @@
 import parsePhoneNumber from 'libphonenumber-js'
 import isEmail from 'validator/lib/isEmail.js'
+import stripAnsi from 'strip-ansi'
 import {DetailedSchool, Branch} from './types.js'
 
 const classifications = new Map([
@@ -106,14 +107,17 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 		house_number,
 		postcode,
 		city,
-		phone,
-		fax,
+		phone: unsanitizedPhone,
+		fax: unsanitizedFax,
 		email,
 		website,
 		types,
 		branches
 	}) => {
 		const problems: string[] = []
+
+		const phone = unsanitizedPhone ? stripAnsi(unsanitizedPhone) : unsanitizedPhone
+		const fax = unsanitizedFax ? stripAnsi(unsanitizedFax) : unsanitizedFax
 
 		if (street === null) {
 			problems.push('Missing street name')
@@ -147,7 +151,7 @@ export const formatToFroide = (schools: DetailedSchool[]) => {
 
 		const getPhoneNumber = () => {
 			if (!phone) {
-				return undefined
+				return
 			}
 
 			if (problems.includes('Invalid phone number')) {
